@@ -9,8 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@auth0/nextjs-auth0": "^4.28.0",
+    "chart.js": "^4.5.1",
     "next": "16.3.3",
+    "node-cache": "^5.1.2",
     "react": "19.2.8",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
@@ -18,9 +22,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.1.1",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   }
 }
