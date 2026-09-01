@@ -4,6 +4,7 @@ import { useUser } from '@auth0/nextjs-auth0/client';
 import { useEffect, useState, useMemo } from 'react';
 import type { CityWeatherResult } from '../../lib/weather-api';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import Image from 'next/image';
 
 // --- Inline SVGs to guarantee rendering in React 19 ---
 const DashboardIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>);
@@ -12,7 +13,7 @@ const MapIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="20" height
 const LogoutIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>);
 const MenuIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>);
 const SearchIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>);
-const LogoIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>);
+const CloseIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>);
 
 export default function DashboardPage() {
   const { user, isLoading: isUserLoading } = useUser();
@@ -21,6 +22,8 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedCity, setSelectedCity] = useState<CityWeatherResult | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -58,6 +61,8 @@ export default function DashboardPage() {
     return [...weatherData].sort((a, b) => b.comfortScore - a.comfortScore)[0];
   }, [weatherData]);
 
+  const displayCity = selectedCity || bestCity;
+
   const averageScore = useMemo(() => {
     if (!weatherData.length) return 0;
     const total = weatherData.reduce((acc, city) => acc + city.comfortScore, 0);
@@ -81,25 +86,34 @@ export default function DashboardPage() {
         ${isSidebarOpen ? 'w-[260px] p-6' : 'w-0 p-0 opacity-0 overflow-hidden border-none'}
       `}>
         <div className="flex items-center gap-3 mb-10 min-w-[200px]">
-          <div className="w-8 h-8 relative shrink-0 flex items-center justify-center">
-            <LogoIcon />
+          <div className="w-8 h-8 relative shrink-0">
+            <Image src="/icon.svg" alt="ClimaSense Logo" fill className="object-contain" />
           </div>
           <h1 className="text-xl font-bold tracking-tight whitespace-nowrap">ClimaSense</h1>
         </div>
 
         <nav className="flex-1 space-y-2 min-w-[200px]">
-          <a href="#" onClick={(e) => e.preventDefault()} className="flex items-center gap-3 px-4 py-3 bg-indigo-50 dark:bg-indigo-500/10 text-brand rounded-xl font-semibold transition-colors">
+          <button 
+            onClick={() => setActiveTab('dashboard')} 
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-colors ${activeTab === 'dashboard' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-brand' : 'text-sub hover:bg-[var(--bg-primary)] hover:text-main'}`}
+          >
             <div className="shrink-0"><DashboardIcon /></div>
             <span className="text-sm whitespace-nowrap">Dashboard</span>
-          </a>
-          <a href="#" onClick={(e) => e.preventDefault()} className="flex items-center gap-3 px-4 py-3 text-sub hover:bg-[var(--bg-primary)] hover:text-main rounded-xl font-medium transition-colors">
+          </button>
+          <button 
+            onClick={() => setActiveTab('forecast')} 
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${activeTab === 'forecast' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-brand' : 'text-sub hover:bg-[var(--bg-primary)] hover:text-main'}`}
+          >
             <div className="shrink-0"><ForecastIcon /></div>
             <span className="text-sm whitespace-nowrap">Forecast</span>
-          </a>
-          <a href="#" onClick={(e) => e.preventDefault()} className="flex items-center gap-3 px-4 py-3 text-sub hover:bg-[var(--bg-primary)] hover:text-main rounded-xl font-medium transition-colors">
+          </button>
+          <button 
+            onClick={() => setActiveTab('map')} 
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${activeTab === 'map' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-brand' : 'text-sub hover:bg-[var(--bg-primary)] hover:text-main'}`}
+          >
             <div className="shrink-0"><MapIcon /></div>
             <span className="text-sm whitespace-nowrap">World Map</span>
-          </a>
+          </button>
         </nav>
 
         <div className="mt-auto pt-6 border-t border-[var(--border-color)] min-w-[200px] pb-4">
@@ -115,7 +129,7 @@ export default function DashboardPage() {
         
         {/* Full-width Header with distinct background */}
         <header className="h-[72px] shrink-0 bg-[var(--bg-secondary)] border-b border-[var(--border-color)] z-40 shadow-sm transition-all duration-300 w-full">
-          <div className="max-w-6xl mx-auto w-full h-full px-6 lg:px-8 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto w-full h-full px-6 lg:px-8 flex items-center justify-between">
             
             <div className="flex items-center gap-6">
               <button 
@@ -127,7 +141,9 @@ export default function DashboardPage() {
               </button>
 
               <div>
-                <h2 className="text-xl font-bold tracking-tight">Weather Analytics</h2>
+                <h2 className="text-xl font-bold tracking-tight capitalize">
+                  {activeTab === 'dashboard' ? 'Weather Analytics' : activeTab === 'forecast' ? 'City Forecast' : 'Global Map'}
+                </h2>
                 <p className="text-xs text-sub mt-1.5 hidden sm:block">Welcome back, {user?.name?.split(' ')[0] || user?.email?.split('@')[0]}!</p>
               </div>
             </div>
@@ -156,143 +172,183 @@ export default function DashboardPage() {
         <div className="flex-1 overflow-y-auto p-8 lg:p-12 animate-fade-in">
           <div className="max-w-7xl mx-auto">
             
-            {/* Section 1: Summary Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-8">
-              <div className="analytics-card flex flex-col justify-center">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-semibold text-sub uppercase tracking-wider">Cities Monitored</span>
-                  <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full ${cacheStatus?.cacheStatus === 'HIT' || cacheStatus?.processed?.status === 'HIT' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10' : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10'}`}>
-                    Cache: {cacheStatus?.cacheStatus || cacheStatus?.processed?.status || 'MISS'}
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-3">
-                  <span className="text-4xl font-bold">{weatherData.length}</span>
-                </div>
-              </div>
-              
-              <div className="analytics-card flex flex-col justify-center">
-                <span className="text-xs font-semibold text-sub uppercase tracking-wider mb-2">Average Comfort</span>
-                <div className="text-4xl font-bold text-amber-500">{averageScore}</div>
-              </div>
-
-              <div className="analytics-card flex justify-between items-center">
-                <div>
-                  <span className="text-xs font-semibold text-sub uppercase tracking-wider mb-2 block">Best City</span>
-                  <div className="text-2xl font-bold">{bestCity?.cityName || 'N/A'}</div>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] font-semibold text-sub uppercase tracking-wider mb-2 block">Score</span>
-                  <div className="text-3xl font-bold text-emerald-500">{bestCity?.comfortScore || 0}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Section 2: Content Split */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-              
-              {/* Left Column (Main Analytics) */}
-              <div className="lg:col-span-2 flex flex-col gap-6 lg:gap-8">
-                
-                {/* Top Recommended City: Horizontal Card */}
-                {bestCity && (
-                  <div className="analytics-card flex flex-col sm:flex-row items-center justify-between !py-6">
-                    <div className="flex items-center gap-4 w-full sm:w-auto mb-4 sm:mb-0">
-                      <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center shrink-0">
-                        {bestCity.weather && (
-                          <img src={`https://openweathermap.org/img/wn/${bestCity.weather.icon}@2x.png`} alt="weather" className="w-12 h-12" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-brand uppercase tracking-wider mb-0.5">Top Recommended</div>
-                        <h3 className="text-xl font-bold">{bestCity.cityName}</h3>
-                        {bestCity.weather && (
-                          <p className="text-sm text-sub capitalize">{bestCity.weather.description}</p>
-                        )}
-                      </div>
+            {activeTab === 'dashboard' && (
+              <>
+                {/* Section 1: Summary Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-8">
+                  <div className="analytics-card flex flex-col justify-center">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-xs font-semibold text-sub uppercase tracking-wider">Cities Monitored</span>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full ${cacheStatus?.cacheStatus === 'HIT' || cacheStatus?.processed?.status === 'HIT' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10' : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10'}`}>
+                        Cache: {cacheStatus?.cacheStatus || cacheStatus?.processed?.status || 'MISS'}
+                      </span>
                     </div>
-
-                    <div className="flex items-center gap-6 w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-[var(--border-color)] pt-4 sm:pt-0 sm:pl-6">
-                      <div>
-                        <div className="text-xs text-sub mb-1">Temp</div>
-                        <div className="text-xl font-bold">{bestCity.temperature.toFixed(1)}°</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-sub mb-1">Humidity</div>
-                        <div className="text-sm font-semibold">{bestCity.humidity}%</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-sub mb-1">Wind</div>
-                        <div className="text-sm font-semibold">{bestCity.windSpeed}m/s</div>
-                      </div>
-                      <div className="text-right ml-auto sm:ml-4">
-                        <div className="text-[10px] uppercase font-bold text-sub mb-1">Score</div>
-                        <div className="text-2xl font-bold text-emerald-500">{bestCity.comfortScore}</div>
-                      </div>
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-4xl font-bold">{weatherData.length}</span>
                     </div>
                   </div>
-                )}
+                  
+                  <div className="analytics-card flex flex-col justify-center">
+                    <span className="text-xs font-semibold text-sub uppercase tracking-wider mb-2">Average Comfort</span>
+                    <div className="text-4xl font-bold text-amber-500">{averageScore}</div>
+                  </div>
 
-                {/* Comfort Score Chart */}
-                <div className="analytics-card">
-                  <h3 className="text-sm font-bold mb-4">Comfort Score Distribution</h3>
-                  <div className="h-[280px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={[...weatherData].sort((a,b) => b.comfortScore - a.comfortScore)} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.2}/>
-                            <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <XAxis dataKey="cityName" tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} dy={10} />
-                        <YAxis tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} dx={-10} />
-                        <Tooltip 
-                          contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)', borderRadius: '8px', fontSize: '12px', color: 'var(--text-primary)' }}
-                          itemStyle={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}
-                        />
-                        <Area type="monotone" dataKey="comfortScore" stroke="var(--accent-primary)" strokeWidth={2} fillOpacity={1} fill="url(#colorScore)" />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                  <div className="analytics-card flex justify-between items-center">
+                    <div>
+                      <span className="text-xs font-semibold text-sub uppercase tracking-wider mb-2 block">Best City</span>
+                      <div className="text-2xl font-bold">{bestCity?.cityName || 'N/A'}</div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] font-semibold text-sub uppercase tracking-wider mb-2 block">Score</span>
+                      <div className="text-3xl font-bold text-emerald-500">{bestCity?.comfortScore || 0}</div>
+                    </div>
                   </div>
                 </div>
 
-              </div>
-
-              {/* Right Column: Rankings List */}
-              <div className="analytics-card flex flex-col h-full">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-bold">City Rankings</h3>
-                  <span className="text-[10px] font-semibold text-sub uppercase">Score</span>
-                </div>
-                
-                <div className="flex flex-col gap-3 overflow-y-auto pr-1">
-                  {filteredData.map((city, index) => {
-                    const scoreColor = city.comfortScore >= 80 ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 
-                                       city.comfortScore >= 60 ? 'text-amber-500 bg-amber-50 dark:bg-amber-500/10' : 
-                                       'text-red-500 bg-red-50 dark:bg-red-500/10';
+                {/* Section 2: Content Split */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                  
+                  {/* Left Column (Main Analytics) */}
+                  <div className="lg:col-span-2 flex flex-col gap-6 lg:gap-8">
                     
-                    return (
-                      <div key={city.cityCode} className="flex items-center justify-between p-2 rounded-lg hover:bg-[var(--bg-primary)] transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="text-xs font-bold text-sub w-4">{index + 1}.</div>
+                    {/* Dynamic City Detail / Recommended Card */}
+                    {displayCity && (
+                      <div className="analytics-card flex flex-col sm:flex-row items-center justify-between !py-6 relative">
+                        {selectedCity && (
+                          <button 
+                            onClick={() => setSelectedCity(null)}
+                            className="absolute top-4 right-4 p-1 text-sub hover:text-main rounded-md hover:bg-[var(--bg-primary)] transition-colors"
+                            title="Clear Selection"
+                          >
+                            <CloseIcon />
+                          </button>
+                        )}
+                        <div className="flex items-center gap-4 w-full sm:w-auto mb-4 sm:mb-0">
+                          <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center shrink-0">
+                            {displayCity.weather && (
+                              <img src={`https://openweathermap.org/img/wn/${displayCity.weather.icon}@2x.png`} alt="weather" className="w-12 h-12 drop-shadow-md" />
+                            )}
+                          </div>
                           <div>
-                            <div className="text-sm font-semibold">{city.cityName}</div>
-                            <div className="text-xs text-sub">{city.temperature.toFixed(0)}°C, {city.humidity}%</div>
+                            <div className="text-xs font-bold text-brand uppercase tracking-wider mb-0.5">
+                              {selectedCity ? 'City Details' : 'Top Recommended'}
+                            </div>
+                            <h3 className="text-xl font-bold">{displayCity.cityName}</h3>
+                            {displayCity.weather && (
+                              <p className="text-sm text-sub capitalize">{displayCity.weather.description}</p>
+                            )}
                           </div>
                         </div>
-                        <div className={`px-2 py-1 rounded text-xs font-bold ${scoreColor}`}>
-                          {city.comfortScore}
+
+                        <div className="flex items-center gap-6 w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-[var(--border-color)] pt-4 sm:pt-0 sm:pl-6 pr-4">
+                          <div>
+                            <div className="text-xs text-sub mb-1">Temp</div>
+                            <div className="text-xl font-bold">{displayCity.temperature.toFixed(1)}°</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-sub mb-1">Humidity</div>
+                            <div className="text-sm font-semibold">{displayCity.humidity}%</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-sub mb-1">Wind</div>
+                            <div className="text-sm font-semibold">{displayCity.windSpeed}m/s</div>
+                          </div>
+                          <div className="text-right ml-auto sm:ml-4">
+                            <div className="text-[10px] uppercase font-bold text-sub mb-1">Score</div>
+                            <div className="text-2xl font-bold text-emerald-500">{displayCity.comfortScore}</div>
+                          </div>
                         </div>
                       </div>
-                    );
-                  })}
-                  {filteredData.length === 0 && (
-                    <div className="text-xs text-sub text-center py-4">No cities found.</div>
-                  )}
-                </div>
-              </div>
+                    )}
 
-            </div>
+                    {/* Comfort Score Chart */}
+                    <div className="analytics-card">
+                      <h3 className="text-sm font-bold mb-4">Comfort Score Distribution</h3>
+                      <div className="h-[280px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={[...weatherData].sort((a,b) => b.comfortScore - a.comfortScore)} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.2}/>
+                                <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <XAxis dataKey="cityName" tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} dy={10} />
+                            <YAxis tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} dx={-10} />
+                            <Tooltip 
+                              contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)', borderRadius: '8px', fontSize: '12px', color: 'var(--text-primary)' }}
+                              itemStyle={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}
+                            />
+                            <Area type="monotone" dataKey="comfortScore" stroke="var(--accent-primary)" strokeWidth={2} fillOpacity={1} fill="url(#colorScore)" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Right Column: Rankings List */}
+                  <div className="analytics-card flex flex-col h-full">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-sm font-bold">City Rankings</h3>
+                      <span className="text-[10px] font-semibold text-sub uppercase">Score</span>
+                    </div>
+                    
+                    <div className="flex flex-col gap-3 overflow-y-auto pr-1">
+                      {filteredData.map((city, index) => {
+                        const scoreColor = city.comfortScore >= 80 ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 
+                                           city.comfortScore >= 60 ? 'text-amber-500 bg-amber-50 dark:bg-amber-500/10' : 
+                                           'text-red-500 bg-red-50 dark:bg-red-500/10';
+                        const isSelected = selectedCity?.cityCode === city.cityCode;
+                        
+                        return (
+                          <button 
+                            key={city.cityCode} 
+                            onClick={() => setSelectedCity(city)}
+                            className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors text-left border ${isSelected ? 'bg-indigo-50/50 dark:bg-indigo-500/5 border-brand/30 shadow-sm' : 'border-transparent hover:bg-[var(--bg-primary)]'}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="text-xs font-bold text-sub w-4">{index + 1}.</div>
+                              <div>
+                                <div className="text-sm font-semibold">{city.cityName}</div>
+                                <div className="text-xs text-sub">{city.temperature.toFixed(0)}°C, {city.humidity}%, {city.windSpeed}m/s</div>
+                              </div>
+                            </div>
+                            <div className={`px-2 py-1 rounded text-xs font-bold ${scoreColor}`}>
+                              {city.comfortScore}
+                            </div>
+                          </button>
+                        );
+                      })}
+                      {filteredData.length === 0 && (
+                        <div className="text-xs text-sub text-center py-4">No cities found.</div>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              </>
+            )}
+
+            {activeTab === 'forecast' && (
+              <div className="flex flex-col items-center justify-center h-[50vh] text-center animate-fade-in">
+                <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-500/10 text-brand rounded-full flex items-center justify-center mb-6">
+                  <ForecastIcon />
+                </div>
+                <h2 className="text-2xl font-bold mb-2">City Forecast Module</h2>
+                <p className="text-sub max-w-md">Advanced multi-day weather forecasting and historical trend analysis features are currently in development.</p>
+              </div>
+            )}
+
+            {activeTab === 'map' && (
+              <div className="flex flex-col items-center justify-center h-[50vh] text-center animate-fade-in">
+                <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-500/10 text-brand rounded-full flex items-center justify-center mb-6">
+                  <MapIcon />
+                </div>
+                <h2 className="text-2xl font-bold mb-2">Global Interactive Map</h2>
+                <p className="text-sub max-w-md">Live geospatial weather tracking and interactive radar features are coming soon in the next update.</p>
+              </div>
+            )}
           </div>
         </div>
       </main>
