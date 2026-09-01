@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'ClimaSense — Weather Comfort Analytics',
+  title: 'ClimaSense',
   description:
     'Real-time weather analytics dashboard with custom Comfort Index scoring for cities worldwide.',
 };
