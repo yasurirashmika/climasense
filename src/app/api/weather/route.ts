@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { auth0 } from '../../../lib/auth0';
 import { getWeatherData } from '../../../lib/weather-api';
 
 /**
@@ -13,6 +14,16 @@ import { getWeatherData } from '../../../lib/weather-api';
  */
 export async function GET() {
   try {
+    // Check authentication
+    const session = await auth0.getSession();
+
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized — please log in' },
+        { status: 401 }
+      );
+    }
+
     const data = await getWeatherData();
 
     return NextResponse.json(data, {
