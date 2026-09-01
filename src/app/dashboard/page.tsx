@@ -328,7 +328,7 @@ export default function DashboardPage() {
                               <Tooltip 
                                 contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)', borderRadius: '8px', fontSize: '12px', color: 'var(--text-primary)' }}
                                 itemStyle={{ color: '#f97316', fontWeight: 'bold' }}
-                                formatter={(value: number) => [`${value}°C`, 'Temperature']}
+                                formatter={(value: any) => [`${value}°C`, 'Temperature']}
                                 labelFormatter={(label) => `Time: ${label}`}
                               />
                               <Area type="monotone" dataKey="temp" stroke="#f97316" strokeWidth={2} fillOpacity={1} fill="url(#colorTemp)" />
