@@ -1,114 +1,50 @@
-'use client';
+import { auth0 } from '../lib/auth0';
+import { redirect } from 'next/navigation';
+import { CloudSunny } from 'iconsax-react';
 
-import { useUser } from '@auth0/nextjs-auth0/client';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
-/**
- * Landing Page (Public)
- *
- * - If user is already logged in → redirect to /dashboard
- * - If not logged in → show hero section with login CTA
- *
- * This is a client component because:
- * - useUser() hook needs client-side React context
- * - useRouter() for client-side navigation
- */
-export default function HomePage() {
-  const { user, isLoading } = useUser();
-  const router = useRouter();
-
-  // If already authenticated, redirect to dashboard
-  useEffect(() => {
-    if (user) {
-      router.push('/dashboard');
-    }
-  }, [user, router]);
-
-  if (isLoading) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        background: 'var(--bg-primary)',
-      }}>
-        <div className="gradient-text" style={{ fontSize: '1.5rem', fontWeight: 600 }}>
-          Loading...
-        </div>
-      </div>
-    );
+export default async function Home() {
+  // Check if user is already logged in
+  const session = await auth0.getSession();
+  
+  if (session) {
+    redirect('/dashboard');
   }
 
   return (
-    <main style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
-      {/* Animated background orbs */}
-      <div className="bg-orb bg-orb-1" />
-      <div className="bg-orb bg-orb-2" />
-      <div className="bg-orb bg-orb-3" />
-
-      {/* Hero Content */}
-      <div style={{
-        position: 'relative',
-        zIndex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        padding: '2rem',
-        textAlign: 'center',
-      }}>
-        {/* Logo / Brand */}
-        <div className="animate-fade-in" style={{ marginBottom: '1rem' }}>
-          <span style={{ fontSize: '3rem' }}>🌤️</span>
+    <div className="min-h-screen bg-var-primary flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      
+      {/* Main Content */}
+      <main className="z-10 text-center max-w-4xl mx-auto px-4">
+        {/* Badge */}
+        <div className="animate-fade-in delay-1 mb-8">
+          <span className="inline-block py-1.5 px-4 rounded-full bg-var-secondary border border-var-color text-xs font-semibold tracking-wider text-var-secondary">
+            v2.0 is now live
+          </span>
         </div>
 
-        <h1
-          className="animate-fade-in"
-          style={{
-            fontSize: 'clamp(2.5rem, 6vw, 4rem)',
-            fontWeight: 800,
-            letterSpacing: '-0.02em',
-            marginBottom: '1rem',
-            lineHeight: 1.1,
-          }}
+        {/* Logo/Icon */}
+        <div className="flex justify-center mb-6 animate-fade-in delay-2">
+          <div className="p-4 bg-var-secondary rounded-2xl shadow-sm border border-var-color text-accent-primary">
+            <CloudSunny size="48" variant="Bulk" />
+          </div>
+        </div>
+
+        {/* Hero Headline */}
+        <h1 
+          className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 animate-fade-in delay-2 text-var-primary"
         >
-          <span className="gradient-text">ClimaSense</span>
+          Intelligence for <br className="hidden md:block"/>
+          <span className="text-accent-primary">Every Climate.</span>
         </h1>
 
-        <p
-          className="animate-fade-in delay-1"
-          style={{
-            fontSize: 'clamp(1rem, 2.5vw, 1.25rem)',
-            color: 'var(--text-secondary)',
-            maxWidth: '600px',
-            marginBottom: '0.5rem',
-            lineHeight: 1.6,
-          }}
-        >
-          Real-time weather analytics with a custom{' '}
-          <strong style={{ color: 'var(--accent-primary)' }}>Comfort Index</strong>{' '}
-          that ranks cities from most to least comfortable.
+        {/* Subtitle */}
+        <p className="text-lg md:text-xl text-var-secondary mb-10 max-w-2xl mx-auto animate-fade-in delay-3">
+          ClimaSense analyzes real-time meteorological data across global cities, calculating the ultimate Comfort Index to help you decide your next destination.
         </p>
 
-        <p
-          className="animate-fade-in delay-2"
-          style={{
-            fontSize: '0.95rem',
-            color: 'var(--text-muted)',
-            maxWidth: '500px',
-            marginBottom: '2.5rem',
-            lineHeight: 1.6,
-          }}
-        >
-          Powered by OpenWeatherMap • Secured by Auth0 • Built with Next.js
-        </p>
-
-        {/* CTA Buttons */}
+        {/* CTA */}
         <div
-          className="animate-fade-in delay-3"
+          className="animate-fade-in delay-4"
           style={{
             display: 'flex',
             gap: '1rem',
@@ -116,42 +52,17 @@ export default function HomePage() {
             justifyContent: 'center',
           }}
         >
-          <a href="/auth/login" className="btn-accent">
-            🔐 Sign In to Dashboard
+          <a href="/auth/login" className="btn-accent shadow-sm">
+            Sign In to Dashboard →
           </a>
         </div>
+      </main>
 
-        {/* Feature Pills */}
-        <div
-          className="animate-fade-in delay-4"
-          style={{
-            display: 'flex',
-            gap: '0.75rem',
-            marginTop: '3rem',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-          }}
-        >
-          {['10 Global Cities', 'Comfort Scoring', 'Server-Side Caching', 'Dark Mode'].map(
-            (feature) => (
-              <span
-                key={feature}
-                style={{
-                  padding: '0.5rem 1rem',
-                  borderRadius: '9999px',
-                  fontSize: '0.85rem',
-                  color: 'var(--text-secondary)',
-                  border: '1px solid var(--border-color)',
-                  background: 'var(--glass-bg)',
-                  backdropFilter: 'blur(8px)',
-                }}
-              >
-                {feature}
-              </span>
-            )
-          )}
-        </div>
-      </div>
-    </main>
+      {/* Footer */}
+      <footer className="absolute bottom-8 text-sm text-var-muted animate-fade-in delay-5 text-center">
+        Powered by Next.js, Auth0, and OpenWeatherMap. <br/>
+        Designed for human comfort.
+      </footer>
+    </div>
   );
 }
