@@ -24,12 +24,36 @@ export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedCity, setSelectedCity] = useState<CityWeatherResult | null>(null);
+  const [forecastTrend, setForecastTrend] = useState<any[]>([]);
+  const [isForecastLoading, setIsForecastLoading] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
       setIsSidebarOpen(true);
     }
   }, []);
+
+  useEffect(() => {
+    async function fetchForecast() {
+      if (!selectedCity) {
+        setForecastTrend([]);
+        return;
+      }
+      setIsForecastLoading(true);
+      try {
+        const res = await fetch(`/api/forecast?cityCode=${selectedCity.cityCode}`);
+        if (res.ok) {
+          const data = await res.json();
+          setForecastTrend(data.data || []);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsForecastLoading(false);
+      }
+    }
+    fetchForecast();
+  }, [selectedCity]);
 
   useEffect(() => {
     async function fetchData() {
@@ -277,26 +301,55 @@ export default function DashboardPage() {
                       </div>
                     )}
 
-                    {/* Comfort Score Chart */}
+                    {/* Dynamic Chart Section */}
                     <div className="analytics-card">
-                      <h3 className="text-sm font-bold mb-4">Comfort Score Distribution</h3>
-                      <div className="h-[280px] w-full">
+                      <h3 className="text-sm font-bold mb-4">
+                        {selectedCity 
+                          ? `${selectedCity.cityName} 24h Temperature Trend` 
+                          : 'Comfort Score Distribution (All Cities)'}
+                      </h3>
+                      <div className="h-[280px] w-full relative">
+                        {isForecastLoading && (
+                           <div className="absolute inset-0 z-10 flex items-center justify-center bg-[var(--bg-secondary)]/50 backdrop-blur-sm rounded-lg">
+                             <div className="text-sm font-medium text-brand animate-pulse">Loading trend...</div>
+                           </div>
+                        )}
                         <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={[...weatherData].sort((a,b) => b.comfortScore - a.comfortScore)} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                            <defs>
-                              <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.2}/>
-                                <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0}/>
-                              </linearGradient>
-                            </defs>
-                            <XAxis dataKey="cityName" tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} dy={10} />
-                            <YAxis tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} dx={-10} />
-                            <Tooltip 
-                              contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)', borderRadius: '8px', fontSize: '12px', color: 'var(--text-primary)' }}
-                              itemStyle={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}
-                            />
-                            <Area type="monotone" dataKey="comfortScore" stroke="var(--accent-primary)" strokeWidth={2} fillOpacity={1} fill="url(#colorScore)" />
-                          </AreaChart>
+                          {selectedCity && forecastTrend.length > 0 ? (
+                            <AreaChart data={forecastTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                              <defs>
+                                <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.2}/>
+                                  <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                                </linearGradient>
+                              </defs>
+                              <XAxis dataKey="time" tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} dy={10} />
+                              <YAxis domain={['dataMin - 2', 'dataMax + 2']} tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} dx={-10} tickFormatter={(val) => `${val}°`} />
+                              <Tooltip 
+                                contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)', borderRadius: '8px', fontSize: '12px', color: 'var(--text-primary)' }}
+                                itemStyle={{ color: '#f97316', fontWeight: 'bold' }}
+                                formatter={(value: number) => [`${value}°C`, 'Temperature']}
+                                labelFormatter={(label) => `Time: ${label}`}
+                              />
+                              <Area type="monotone" dataKey="temp" stroke="#f97316" strokeWidth={2} fillOpacity={1} fill="url(#colorTemp)" />
+                            </AreaChart>
+                          ) : (
+                            <AreaChart data={[...weatherData].sort((a,b) => b.comfortScore - a.comfortScore)} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                              <defs>
+                                <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.2}/>
+                                  <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0}/>
+                                </linearGradient>
+                              </defs>
+                              <XAxis dataKey="cityName" tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} dy={10} />
+                              <YAxis tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} dx={-10} />
+                              <Tooltip 
+                                contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)', borderRadius: '8px', fontSize: '12px', color: 'var(--text-primary)' }}
+                                itemStyle={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}
+                              />
+                              <Area type="monotone" dataKey="comfortScore" stroke="var(--accent-primary)" strokeWidth={2} fillOpacity={1} fill="url(#colorScore)" />
+                            </AreaChart>
+                          )}
                         </ResponsiveContainer>
                       </div>
                     </div>
