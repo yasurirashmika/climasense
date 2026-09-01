@@ -353,7 +353,6 @@ export default function DashboardPage() {
                         </ResponsiveContainer>
                       </div>
                     </div>
-
                   </div>
 
                   {/* Right Column: Rankings List */}
