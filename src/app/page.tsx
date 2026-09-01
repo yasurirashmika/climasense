@@ -65,7 +65,7 @@ export default async function Home() {
           </div>
 
           {/* Abstract Dashboard Preview (Visual candy) */}
-          <div className="mt-20 relative mx-auto max-w-5xl animate-fade-in" style={{ animationDelay: '500ms' }}>
+          <div className="hidden md:block mt-20 relative mx-auto max-w-5xl animate-fade-in" style={{ animationDelay: '500ms' }}>
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10 rounded-2xl pointer-events-none" />
             <div className="bg-slate-900/50 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl p-4 sm:p-6 overflow-hidden relative border-t-white/20 border-l-white/20">
                <div className="flex items-center gap-2 mb-6">

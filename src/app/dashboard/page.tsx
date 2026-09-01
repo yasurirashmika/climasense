@@ -21,9 +21,15 @@ export default function DashboardPage() {
   const [cacheStatus, setCacheStatus] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedCity, setSelectedCity] = useState<CityWeatherResult | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+      setIsSidebarOpen(true);
+    }
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -80,10 +86,20 @@ export default function DashboardPage() {
   return (
     <div className="flex min-h-screen bg-[var(--bg-primary)] font-sans text-main overflow-x-hidden">
       
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar: Collapsible */}
       <aside className={`
-        flex flex-col shrink-0 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] z-50 sticky top-0 h-screen transition-all duration-300 shadow-sm
-        ${isSidebarOpen ? 'w-[260px] p-6' : 'w-0 p-0 opacity-0 overflow-hidden border-none'}
+        fixed lg:sticky top-0 left-0 z-50 h-screen flex flex-col shrink-0 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] transition-all duration-300 shadow-sm
+        ${isSidebarOpen 
+          ? 'translate-x-0 w-[260px] p-6' 
+          : '-translate-x-full w-[260px] p-6 lg:translate-x-0 lg:w-0 lg:p-0 lg:opacity-0 lg:overflow-hidden lg:border-none'}
       `}>
         <div className="flex items-center gap-3 mb-10 min-w-[200px]">
           <div className="w-8 h-8 relative shrink-0">
@@ -141,15 +157,15 @@ export default function DashboardPage() {
               </button>
 
               <div>
-                <h2 className="text-xl font-bold tracking-tight capitalize">
+                <h2 className="text-lg sm:text-xl font-bold tracking-tight capitalize">
                   {activeTab === 'dashboard' ? 'Weather Analytics' : activeTab === 'forecast' ? 'City Forecast' : 'Global Map'}
                 </h2>
                 <p className="text-xs text-sub mt-1.5 hidden sm:block">Welcome back, {user?.name?.split(' ')[0] || user?.email?.split('@')[0]}!</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="relative w-48 md:w-64">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="relative w-32 sm:w-48 md:w-64">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-sub">
                   <SearchIcon />
                 </div>
@@ -169,7 +185,7 @@ export default function DashboardPage() {
         </header>
 
         {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto p-8 lg:p-12 animate-fade-in">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 lg:p-12 animate-fade-in">
           <div className="max-w-7xl mx-auto">
             
             {activeTab === 'dashboard' && (
