@@ -3,6 +3,7 @@
 ClimaSense is a secure, full-stack weather analytics application built with **Next.js 16** and **TypeScript**. It fetches real-time meteorological data for global cities from OpenWeatherMap, processes it using a proprietary Comfort Index algorithm, and presents the insights on a beautifully designed, responsive dashboard.
 
 **Live Demo:** [https://climasense-theta.vercel.app](https://climasense-theta.vercel.app)
+**Screen Recording:** https://drive.google.com/file/d/1zQMldvsg8RlOeQ1CJbxvh4LVJCsP_Sgl/view?usp=drive_link
 
 ## 🚀 Features
 
